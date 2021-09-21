@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+        <h1> Simulador NUPTIC-43</h1>
+        <a class="btn btn-info simulation" >Start Simulation</a>
+</div>
+
+
+<div class="simulation-result">
+          result
+ </div>
+
+ <script>
+ $(document).ready(function () {
+
+   $( ".simulation" ).on( "click", function(e) {
+
+         e.preventDefault();
+
+         var $link = $(e.currentTarget);
+
+         $.ajax({
+          method:"POST",
+          url: 'simulation_start',
+          data: {
+            nombre_simulador: "nuptic-43"
+          },
+          dataType: "json",
+
+          success:function(data) {
+            if(data) {  
+              console.log("hi")
+              $('.simulation-result').html(" Suma del recorrido: "+data);
+            }
+          }
+        });
+       });
+     });
+</script>
+
+
+{% endblock %}
