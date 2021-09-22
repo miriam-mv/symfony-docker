@@ -9,7 +9,9 @@ return [
     false, // $matchHost
     [ // $staticRoutes
         '/' => [[['_route' => 'main', '_controller' => 'App\\Controller\\MainController::index'], null, null, null, false, false, null]],
-        '/simulation_start' => [[['_route' => 'simulation_start', '_controller' => 'App\\Controller\\MainController::ajaxAction'], null, null, null, false, false, null]],
+        '/peticion' => [[['_route' => 'peticion', '_controller' => 'App\\Controller\\MainController::ajaxPeticion'], null, null, null, false, false, null]],
+        '/simulacion_recorrido' => [[['_route' => 'simulacion_recorrido', '_controller' => 'App\\Controller\\MainController::ajaxRecorrido'], null, null, null, false, false, null]],
+        '/simulacion_direccion' => [[['_route' => 'simulacion_direccion', '_controller' => 'App\\Controller\\MainController::ajaxDireccion'], null, null, null, false, false, null]],
     ],
     [ // $regexpList
         0 => '{^(?'

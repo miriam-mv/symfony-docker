@@ -7,42 +7,141 @@
     .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
 </style>
 
+
+
 <div class="example-wrapper">
         <h1> Simulador NUPTIC-43</h1>
+        <label for="Sname">Nombre Simulacion:</label>
+        <input type="text" id="Sname" name="Sname"><br><br>
+        <label for="Sname">Nombre Simulador</label>
+        <input type="text" id="Sname" name="Sname" disabled value='nuptic-43'><br><br>
         <a class="btn btn-info simulation" >Start Simulation</a>
 </div>
 
 
-<div class="simulation-result">
-          result
+
+
+  <div class="container">
+   <div class="row">
+     <div class="col">
+      <h4> Ejecución </h4>
+      <div class="simulation-exe"></div>
+     </div>
+     <div class="col">
+     <h4> Resultado </h4>
+     <div class="simulation-result"></div>
+      <div></div>
+     </div>
+   </div>
  </div>
 
  <script>
+
+ function getRandomInt(min, max) {
+   return Math.floor(Math.random() * (max - min)) + min;
+ }
+ function generateSimulation(id_sim, index) {
+
+   let direcciones = ["Norte", "Sur", "Este","Oeste" ];
+
+   let sim = {id_simulacion:id_sim,nombre_simulador:"nuptic-43",num:index,
+   direccion: direcciones[getRandomInt(0,4)],recorrido: getRandomInt(10,20)}
+
+   return sim;
+
+ }
+
+async function ajaxSimulacion(sim,i){
+   return $.ajax({
+     method:"POST",
+     url: 'peticion',
+     data:sim,
+     dataType: "json",
+
+     success:function(data) {
+       if(data) {
+        $('.simulation-exe').append("<div> Simulacion num "+i+"</div> ")
+       }
+     }, error: function(data){
+       $('.simulation-exe').append("<div> Error, intentando otra vez</div> ")
+
+     }
+    });
+}
+
+async function ajaxGetRecorrido(id_sim){
+   return $.ajax({
+     method:"POST",
+     url: 'simulacion_recorrido',
+     data:{
+      id_simulacion: id_sim
+     },
+     dataType: "json",
+
+     success:function(data) {
+       if(data) {
+         console.log(data);
+         $('.simulation-result').append("<div> La suma del recorrido es "+data+"</div> ");
+       }
+     }, error: function(data){
+       $('.simulation-result').append("<div> Error,no se ha podido calcular</div> ");
+
+     }
+    });
+}
+
+async function ajaxDireccion(id_sim){
+   return $.ajax({
+     method:"POST",
+     url: 'simulacion_direccion',
+     data:{
+      id_simulacion: id_sim
+     },
+     dataType: "json",
+
+     success:function(data) {
+       if(data) {
+         console.log(data);
+         $('.simulation-result').append("<div>La direccion mas frequente es  "+data[0]["direccion"]+"</div> ");
+       }
+     }, error: function(data){
+       $('.simulation-result').append("<div> Error,no se ha podido calcular</div> ");
+
+     }
+    });
+}
+
+
+
  $(document).ready(function () {
 
    $( ".simulation" ).on( "click", function(e) {
-
          e.preventDefault();
-
          var $link = $(e.currentTarget);
+         num_simulacion=1;
+         id_sim= $("#Sname").val();
+         if(id_sim =="") id_sim= getRandomInt(0,400);
+         $('.simulation-exe').html("");
+         while(num_simulacion<=60){
+           try {
+             var sim = generateSimulation(id_sim,num_simulacion);
+             console.log(sim);
+            ajaxSimulacion(sim,num_simulacion).then(function(data) {
 
-         $.ajax({
-          method:"POST",
-          url: 'simulation_start',
-          data: {
-            nombre_simulador: "nuptic-43"
-          },
-          dataType: "json",
+            });
 
-          success:function(data) {
-            if(data) {  
-              console.log("hi")
-              $('.simulation-result').html(" Suma del recorrido: "+data);
-            }
-          }
-        });
-       });
-     });
+           } catch (e) {
+              console.log("err "+e);
+              num_simulacion--;
+           } finally {
+             num_simulacion++;
+           }
+        }
+        ajaxGetRecorrido(id_sim);
+        ajaxDireccion(id_sim);
+
+    });
+});
 </script>
 
 

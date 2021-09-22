@@ -5,10 +5,5 @@
 return [
     'main' => [[], ['_controller' => 'App\\Controller\\MainController::index'], [], [['text', '/']], [], []],
     'simulation_start' => [[], ['_controller' => 'App\\Controller\\MainController::ajaxAction'], [], [['text', '/simulation_start']], [], []],
-    'peticion_index' => [[], ['_controller' => 'App\\Controller\\PeticionController::index'], [], [['text', '/peticion/']], [], []],
-    'peticion_new' => [[], ['_controller' => 'App\\Controller\\PeticionController::new'], [], [['text', '/peticion/new']], [], []],
-    'peticion_show' => [['id'], ['_controller' => 'App\\Controller\\PeticionController::show'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/peticion']], [], []],
-    'peticion_edit' => [['id'], ['_controller' => 'App\\Controller\\PeticionController::edit'], [], [['text', '/edit'], ['variable', '/', '[^/]++', 'id', true], ['text', '/peticion']], [], []],
-    'peticion_delete' => [['id'], ['_controller' => 'App\\Controller\\PeticionController::delete'], [], [['variable', '/', '[^/]++', 'id', true], ['text', '/peticion']], [], []],
     '_preview_error' => [['code', '_format'], ['_controller' => 'error_controller::preview', '_format' => 'html'], ['code' => '\\d+'], [['variable', '.', '[^/]++', '_format', true], ['variable', '/', '\\d+', 'code', true], ['text', '/_error']], [], []],
 ];

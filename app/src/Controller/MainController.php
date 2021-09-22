@@ -16,13 +16,13 @@ use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
 
-$encoders = [new XmlEncoder(), new JsonEncoder()];
-$normalizers = [new ObjectNormalizer()];
-
-$serializer = new Serializer($normalizers, $encoders);
 
 class MainController extends AbstractController
 {
+
+
+
+
     #[Route('/', name: 'main')]
     public function index(): Response
     {
@@ -33,36 +33,75 @@ class MainController extends AbstractController
 
 
 
-    #[Route('/simulation_start', name: 'simulation_start')]
-    public function ajaxAction(Request $request)
+    #[Route('/peticion', name: 'peticion')]
+    public function ajaxPeticion(Request $request)
     {
+
+
       $encoders = [new XmlEncoder(), new JsonEncoder()];
       $normalizers = [new ObjectNormalizer()];
-
       $serializer = new Serializer($normalizers, $encoders);
+
       $direcciones = ["Norte", "Sur", "Este","Oeste" ];
+
       if ($request->isXmlHttpRequest()) {
-           $entityManager = $this->getDoctrine()->getManager();
-
-            for($i=1;$i<=60;$i++){
-              $nombre_simulador= 'nuptic-43';
-              $direccion= $direcciones[rand(0, 3)];
-              $recorrido= rand(10, 20);
-              $peticion = new Peticion($nombre_simulador,$i,$direccion,  $recorrido);
-
-              $entityManager->persist($peticion);
-              $entityManager->flush();
-            }
+        $entityManager = $this->getDoctrine()->getManager();
+        $id_simulacion= $request->get("id_simulacion");
+        $nombre_simulador= $request->get("nombre_simulador");
+        $direccion= $request->get("direccion");
+        $recorrido= $request->get("recorrido");
+        $num=$request->get("num");
+        $peticion = new Peticion($id_simulacion,$nombre_simulador,$num,$direccion,  $recorrido);
+        $entityManager->persist($peticion);
+        $entityManager->flush();
 
 
-          $result1=$entityManager->getRepository(Peticion::class)->findSumRecorrido();
-        //  $result2=$entityManager->getRepository(Peticion::class)->findDireccionFrequente("nuptic-43");
-          $jsonContent = $serializer->serialize($result1, 'json');
-          return new Response($jsonContent, 200);
-        }
+        $jsonContent = $serializer->serialize($peticion, 'json');
+        return new Response($jsonContent, 200);
+      }
 
       return new Response('Sopmething went wrong', 400);
     }
+
+
+    #[Route('/simulacion_recorrido', name: 'simulacion_recorrido')]
+    public function ajaxRecorrido(Request $request)
+    {
+
+      $encoders = [new XmlEncoder(), new JsonEncoder()];
+      $normalizers = [new ObjectNormalizer()];
+      $serializer = new Serializer($normalizers, $encoders);
+
+      if ($request->isXmlHttpRequest()) {
+        $entityManager = $this->getDoctrine()->getManager();
+        $id_simulacion= $request->get("id_simulacion");
+        $result1=$entityManager->getRepository(Peticion::class)->findSumRecorrido($id_simulacion);
+        $jsonContent = $serializer->serialize($result1, 'json');
+        return new Response($jsonContent, 200);
+      }
+
+      return new Response('Sopmething went wrong', 400);
+    }
+
+    #[Route('/simulacion_direccion', name: 'simulacion_direccion')]
+    public function ajaxDireccion(Request $request)
+    {
+
+      $encoders = [new XmlEncoder(), new JsonEncoder()];
+      $normalizers = [new ObjectNormalizer()];
+      $serializer = new Serializer($normalizers, $encoders);
+
+      if ($request->isXmlHttpRequest()) {
+        $entityManager = $this->getDoctrine()->getManager();
+        $id_simulacion= $request->get("id_simulacion");
+        $result2=$entityManager->getRepository(Peticion::class)->findDireccionFrequente("nuptic-43",$id_simulacion);
+        $jsonContent = $serializer->serialize($result2, 'json');
+        return new Response($jsonContent, 200);
+      }
+
+      return new Response('Sopmething went wrong', 400);
+    }
+
 
 
 }

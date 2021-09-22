@@ -20,7 +20,14 @@ class Peticion
     /**
      * @ORM\Column(type="string", length=255)
      */
+    private $id_simulacion;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
     private $nombre_simulador;
+
+
 
     /**
      * @ORM\Column(type="integer")
@@ -37,9 +44,24 @@ class Peticion
      */
     private $recorrido;
 
+
+
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getIdSimulacion(): ?string
+    {
+        return $this->nombre_simulador;
+    }
+
+    public function setIdSimulacion(string $id_simulacion): self
+    {
+        $this->id_simulacion = $id_simulacion;
+
+        return $this;
     }
 
     public function getNombreSimulador(): ?string
@@ -90,7 +112,8 @@ class Peticion
         return $this;
     }
 
-    public function __construct($nombre_simulador, $num, $direccion, $recorrido) {
+    public function __construct($id_simulacion,$nombre_simulador, $num, $direccion, $recorrido) {
+      $this->id_simulacion = $id_simulacion;
       $this->nombre_simulador = $nombre_simulador;
       $this->num = $num;
       $this->direccion = $direccion;

@@ -32,8 +32,16 @@ class PeticionRepository extends ServiceEntityRepository
         ;
     }
 
-    public function findSumRecorrido(){
-      $results=self::findByNombre("nuptic-43");
+    public function findSumRecorrido($value){
+      $results= $this->createQueryBuilder('p')
+          ->andWhere('p.nombre_simulador = :val')
+          ->setParameter('val', "nuptic-43")
+          ->andWhere('p.id_simulacion = :val2')
+          ->setParameter('val2', $value)
+          ->orderBy('p.id', 'ASC')
+          ->getQuery()
+          ->getResult();
+
       $sum_recorrido=0;
       foreach($results as $result){
          $sum_recorrido+=$result->getRecorrido();
@@ -41,19 +49,20 @@ class PeticionRepository extends ServiceEntityRepository
       return $sum_recorrido;
     }
 
-    public function findDireccionFrequente($value){
+    public function findDireccionFrequente($simulador,$id_sim){
       $qb = $this->createQueryBuilder('p');
 
-      $query = $qb->select($qb->expr()->countDistinct('p.direccion'))
-          ->andWhere('p.nombre_simulador = :val')
-          ->setParameter('val', $value)
-          ->orderBy('p.id', 'ASC')
-          ->getQuery()
-          ->getResult()
-      ;
+      $query =   $qb->select('p.direccion, COUNT(p.direccion) as c')
+           ->where('p.nombre_simulador=:sim AND  p.id_simulacion = :id_sim')
+           ->setParameter('sim', $simulador)
+           ->setParameter('id_sim', $id_sim)
+           ->groupBy('p.direccion')
+           ->orderBy('c', 'DESC')
+           ->getQuery()
+           ->getResult();
 
       return $query;
     }
 
-  
+
 }
