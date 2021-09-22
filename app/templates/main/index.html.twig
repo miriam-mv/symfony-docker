@@ -29,6 +29,7 @@
      </div>
      <div class="col">
      <h4> Resultado </h4>
+     <canvas id="speedChart"></canvas>
      <div class="simulation-result"></div>
       <div></div>
      </div>
@@ -51,36 +52,38 @@
 
  }
 
-async function ajaxSimulacion(sim,i){
-   return $.ajax({
-     method:"POST",
-     url: 'peticion',
-     data:sim,
-     dataType: "json",
 
-     success:function(data) {
-       if(data) {
-        $('.simulation-exe').append("<div> Simulacion num "+i+"</div> ")
-       }
-     }, error: function(data){
-       $('.simulation-exe').append("<div> Error, intentando otra vez</div> ")
+ function doTheThing(sim) {
+   return new Promise((resolve, reject) => {
+     $.ajax({
+      method:"POST",
+      url: 'peticion',
+      data:sim,
+      dataType: "json",
 
-     }
-    });
-}
+       success: function (data) {
+         resolve(data)
+       },
+       error: function (error) {
+         reject(error)
+       },
+     })
+   });
+ }
+
 
 async function ajaxGetRecorrido(id_sim){
    return $.ajax({
      method:"POST",
      url: 'simulacion_recorrido',
      data:{
-      id_simulacion: id_sim
-     },
+       id_simulacion: id_sim,
+       nombre_simulador : "nuptic-43"
+      },
      dataType: "json",
 
      success:function(data) {
        if(data) {
-         console.log(data);
          $('.simulation-result').append("<div> La suma del recorrido es "+data+"</div> ");
        }
      }, error: function(data){
@@ -95,26 +98,111 @@ async function ajaxDireccion(id_sim){
      method:"POST",
      url: 'simulacion_direccion',
      data:{
-      id_simulacion: id_sim
-     },
+       id_simulacion: id_sim,
+       nombre_simulador : "nuptic-43"     },
      dataType: "json",
 
      success:function(data) {
        if(data) {
-         console.log(data);
          $('.simulation-result').append("<div>La direccion mas frequente es  "+data[0]["direccion"]+"</div> ");
+         return data;
+
        }
      }, error: function(data){
        $('.simulation-result').append("<div> Error,no se ha podido calcular</div> ");
+       return data;
 
      }
     });
 }
 
+function makePetiton(id_sim,num_simulacion){
+   var sim = generateSimulation(id_sim,num_simulacion);
+   result= doTheThing(sim,num_simulacion).then(function(data,textStatus, jqXHR){
+      $('.simulation-exe').append("<div> Simulacion num "+num_simulacion+" ejecutada</div> ");
+      num_simulacion++;
+      if(num_simulacion>60) showResults(id_sim);
+
+      else {
+        setTimeout(1000);
+        makePetiton(id_sim,num_simulacion);
+      }
+
+    }).catch(function(jqXHR, textStatus, errorThrown){
+      $('.simulation-exe').append("<div> Error, intentando otra vez</div> ");
+      setTimeout(1000);
+      makePetiton(id_sim,num_simulacion);
+
+    })
+}
+
+function showResults(id_sim){
+  ajaxGetRecorrido(id_sim);
+  ajaxDireccion(id_sim);
+  createGraph(id_sim);
+}
+
+
+function createGraph(id_sim){
+
+  var speedCanvas = document.getElementById("speedChart");
+  $.ajax({
+    method:"POST",
+    url: 'simulacion_peticiones',
+    data:{
+     id_simulacion: id_sim,
+     nombre_simulador : "nuptic-43"
+    },
+    dataType: "json",
+
+    success:function(data) {
+      if(data) {
+        array_data= [];
+        array_labels= [];
+        data.forEach(i => {
+          array_labels.push(i['num']);
+          array_data.push(i['recorrido']);
+
+        });
+
+        var speedData = {
+          labels: array_labels,
+          datasets: [{
+            label: "Recorrido",
+            data: array_data,
+          }]
+        };
+
+        var chartOptions = {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 80,
+              fontColor: 'black'
+            }
+          }
+        };
+
+        var lineChart = new Chart(speedCanvas, {
+          type: 'line',
+          data: speedData,
+          options: chartOptions
+        });      }
+    }, error: function(data){
+        console.log("error + "+data);
+
+    }
+   });
+
+
+
+}
+
 
 
  $(document).ready(function () {
-
+   //createGraph();
    $( ".simulation" ).on( "click", function(e) {
          e.preventDefault();
          var $link = $(e.currentTarget);
@@ -122,24 +210,7 @@ async function ajaxDireccion(id_sim){
          id_sim= $("#Sname").val();
          if(id_sim =="") id_sim= getRandomInt(0,400);
          $('.simulation-exe').html("");
-         while(num_simulacion<=60){
-           try {
-             var sim = generateSimulation(id_sim,num_simulacion);
-             console.log(sim);
-            ajaxSimulacion(sim,num_simulacion).then(function(data) {
-
-            });
-
-           } catch (e) {
-              console.log("err "+e);
-              num_simulacion--;
-           } finally {
-             num_simulacion++;
-           }
-        }
-        ajaxGetRecorrido(id_sim);
-        ajaxDireccion(id_sim);
-
+         makePetiton(id_sim,1);
     });
 });
 </script>

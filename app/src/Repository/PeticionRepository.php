@@ -32,6 +32,18 @@ class PeticionRepository extends ServiceEntityRepository
         ;
     }
 
+    public function findGrupByNombre($nombre_simulador,$id_sim)
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.nombre_simulador=:sim AND p.id_simulacion = :id_sim')
+            ->setParameter('sim', $nombre_simulador)
+            ->setParameter('id_sim', $id_sim)
+            ->orderBy('p.id', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     public function findSumRecorrido($value){
       $results= $this->createQueryBuilder('p')
           ->andWhere('p.nombre_simulador = :val')
@@ -49,12 +61,12 @@ class PeticionRepository extends ServiceEntityRepository
       return $sum_recorrido;
     }
 
-    public function findDireccionFrequente($simulador,$id_sim){
+    public function findDireccionFrequente($nombre_simulador,$id_sim){
       $qb = $this->createQueryBuilder('p');
 
       $query =   $qb->select('p.direccion, COUNT(p.direccion) as c')
            ->where('p.nombre_simulador=:sim AND  p.id_simulacion = :id_sim')
-           ->setParameter('sim', $simulador)
+           ->setParameter('sim', $nombre_simulador)
            ->setParameter('id_sim', $id_sim)
            ->groupBy('p.direccion')
            ->orderBy('c', 'DESC')

@@ -37,30 +37,31 @@ class MainController extends AbstractController
     public function ajaxPeticion(Request $request)
     {
 
+      if(random_int(0, 100) >10 ){
 
-      $encoders = [new XmlEncoder(), new JsonEncoder()];
-      $normalizers = [new ObjectNormalizer()];
-      $serializer = new Serializer($normalizers, $encoders);
+          $encoders = [new XmlEncoder(), new JsonEncoder()];
+          $normalizers = [new ObjectNormalizer()];
+          $serializer = new Serializer($normalizers, $encoders);
 
-      $direcciones = ["Norte", "Sur", "Este","Oeste" ];
+          $direcciones = ["Norte", "Sur", "Este","Oeste" ];
 
-      if ($request->isXmlHttpRequest()) {
-        $entityManager = $this->getDoctrine()->getManager();
-        $id_simulacion= $request->get("id_simulacion");
-        $nombre_simulador= $request->get("nombre_simulador");
-        $direccion= $request->get("direccion");
-        $recorrido= $request->get("recorrido");
-        $num=$request->get("num");
-        $peticion = new Peticion($id_simulacion,$nombre_simulador,$num,$direccion,  $recorrido);
-        $entityManager->persist($peticion);
-        $entityManager->flush();
+          if ($request->isXmlHttpRequest()) {
+            $entityManager = $this->getDoctrine()->getManager();
+            $id_simulacion= $request->get("id_simulacion");
+            $nombre_simulador= $request->get("nombre_simulador");
+            $direccion= $request->get("direccion");
+            $recorrido= $request->get("recorrido");
+            $num=$request->get("num");
+            $peticion = new Peticion($id_simulacion,$nombre_simulador,$num,$direccion,  $recorrido);
+            $entityManager->persist($peticion);
+            $entityManager->flush();
 
 
-        $jsonContent = $serializer->serialize($peticion, 'json');
-        return new Response($jsonContent, 200);
-      }
-
-      return new Response('Sopmething went wrong', 400);
+            $jsonContent = $serializer->serialize($peticion->getId(), 'json');
+            return new Response($jsonContent, 200);
+          }
+        }
+        return new Response('Sopmething went wrong', 400);
     }
 
 
@@ -94,8 +95,30 @@ class MainController extends AbstractController
       if ($request->isXmlHttpRequest()) {
         $entityManager = $this->getDoctrine()->getManager();
         $id_simulacion= $request->get("id_simulacion");
-        $result2=$entityManager->getRepository(Peticion::class)->findDireccionFrequente("nuptic-43",$id_simulacion);
+        $nombre =  $request->get("nombre_simulador");
+        $result2=$entityManager->getRepository(Peticion::class)->findDireccionFrequente($nombre,$id_simulacion);
         $jsonContent = $serializer->serialize($result2, 'json');
+        return new Response($jsonContent, 200);
+      }
+
+      return new Response('Sopmething went wrong', 400);
+    }
+
+    #[Route('/simulacion_peticiones', name: 'simulacion_peticiones')]
+    public function ajaxGetPeticiones(Request $request)
+    {
+
+
+      $encoders = [new XmlEncoder(), new JsonEncoder()];
+      $normalizers = [new ObjectNormalizer()];
+      $serializer = new Serializer($normalizers, $encoders);
+
+      if ($request->isXmlHttpRequest()) {
+        $entityManager = $this->getDoctrine()->getManager();
+        $id_simulacion= $request->get("id_simulacion");
+        $nombre =  $request->get("nombre_simulador");
+        $result=$entityManager->getRepository(Peticion::class)->findGrupByNombre($nombre,$id_simulacion);
+        $jsonContent = $serializer->serialize($result, 'json');
         return new Response($jsonContent, 200);
       }
 

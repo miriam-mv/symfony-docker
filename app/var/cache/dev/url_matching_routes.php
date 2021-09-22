@@ -12,6 +12,7 @@ return [
         '/peticion' => [[['_route' => 'peticion', '_controller' => 'App\\Controller\\MainController::ajaxPeticion'], null, null, null, false, false, null]],
         '/simulacion_recorrido' => [[['_route' => 'simulacion_recorrido', '_controller' => 'App\\Controller\\MainController::ajaxRecorrido'], null, null, null, false, false, null]],
         '/simulacion_direccion' => [[['_route' => 'simulacion_direccion', '_controller' => 'App\\Controller\\MainController::ajaxDireccion'], null, null, null, false, false, null]],
+        '/simulacion_peticiones' => [[['_route' => 'simulacion_peticiones', '_controller' => 'App\\Controller\\MainController::ajaxGetPeticiones'], null, null, null, false, false, null]],
     ],
     [ // $regexpList
         0 => '{^(?'
