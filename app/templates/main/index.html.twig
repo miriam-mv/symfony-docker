@@ -38,6 +38,13 @@
 
  <script>
 
+
+
+var intervalSim=null;
+var intervalGraph=null;
+var num_simulacion =1;
+var lineChart =null;
+
  function getRandomInt(min, max) {
    return Math.floor(Math.random() * (max - min)) + min;
  }
@@ -116,30 +123,26 @@ async function ajaxDireccion(id_sim){
     });
 }
 
-function makePetiton(id_sim,num_simulacion){
-   var sim = generateSimulation(id_sim,num_simulacion);
-   result= doTheThing(sim,num_simulacion).then(function(data,textStatus, jqXHR){
-      $('.simulation-exe').append("<div> Simulacion num "+num_simulacion+" ejecutada</div> ");
-      num_simulacion++;
-      if(num_simulacion>60) showResults(id_sim);
+function makePetiton(id_sim,i){
+  num_simulacion++;
 
-      else {
-        setTimeout(1000);
-        makePetiton(id_sim,num_simulacion);
-      }
+   var sim = generateSimulation(id_sim,i);
+   result= doTheThing(sim,num_simulacion).then(function(data,textStatus, jqXHR){
+      $('.simulation-exe').append("<div> Simulacion num "+i+" ejecutada</div> ");
 
     }).catch(function(jqXHR, textStatus, errorThrown){
       $('.simulation-exe').append("<div> Error, intentando otra vez</div> ");
-      setTimeout(1000);
-      makePetiton(id_sim,num_simulacion);
-
+      console.log( error);
+      makePetiton(id_sim,i);
     })
+
+
 }
 
 function showResults(id_sim){
   ajaxGetRecorrido(id_sim);
   ajaxDireccion(id_sim);
-  createGraph(id_sim);
+  modGraph(id_sim);
 }
 
 
@@ -184,7 +187,7 @@ function createGraph(id_sim){
           }
         };
 
-        var lineChart = new Chart(speedCanvas, {
+        lineChart = new Chart(speedCanvas, {
           type: 'line',
           data: speedData,
           options: chartOptions
@@ -199,18 +202,76 @@ function createGraph(id_sim){
 
 }
 
+function modGraph(id_sim){
+  //remove
+  lineChart.data.labels.pop();
+  lineChart.data.datasets.forEach((dataset) => {
+      dataset.data.pop();
+  });
+  lineChart.update();
+
+  $.ajax({
+    method:"POST",
+    url: 'simulacion_peticiones',
+    data:{
+     id_simulacion: id_sim,
+     nombre_simulador : "nuptic-43"
+    },
+    dataType: "json",
+
+    success:function(data) {
+      if(data) {
+        array_data= [];
+        array_labels= [];
+        data.forEach(i => {
+          array_labels.push(i['num']);
+          array_data.push(i['recorrido']);
+
+        });
+      //add
+        var speedData = {
+            labels: array_labels,
+            datasets: [{
+              label: "Recorrido",
+              data: array_data,
+            }]
+          };
+
+        lineChart.data=speedData;
+        lineChart.update();
+      }
+    }
+  });
+
+}
+
 
 
  $(document).ready(function () {
-   //createGraph();
+
    $( ".simulation" ).on( "click", function(e) {
          e.preventDefault();
          var $link = $(e.currentTarget);
-         num_simulacion=1;
          id_sim= $("#Sname").val();
          if(id_sim =="") id_sim= getRandomInt(0,400);
          $('.simulation-exe').html("");
-         makePetiton(id_sim,1);
+
+         intervalSim = setInterval(function () {
+            makePetiton(id_sim,num_simulacion);
+            if(num_simulacion>60) {
+              clearInterval(intervalSim);
+              showResults(id_sim);
+            }
+        }, 1000);
+        createGraph(id_sim);
+
+        intervalGraph= setInterval(function () {
+            modGraph(id_sim);
+            if(num_simulacion>60 ) {
+              clearInterval(intervalGraph);
+            }
+        }, 5000);
+
     });
 });
 </script>
